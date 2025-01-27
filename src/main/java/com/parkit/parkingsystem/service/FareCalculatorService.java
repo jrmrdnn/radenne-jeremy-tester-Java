@@ -11,34 +11,40 @@ public class FareCalculatorService {
 
     public void calculateFare(Ticket ticket, boolean isDiscount) {
         if ((ticket.getOutTime() == null) || (ticket.getOutTime().before(ticket.getInTime()))) {
-            throw new IllegalArgumentException("Out time provided is incorrect:" + ticket.getOutTime().toString());
+            throw new IllegalArgumentException("Out time provided is incorrect");
         }
 
-        long inTimeInMillis = ticket.getInTime().getTime();
-        long outTimeInMillis = ticket.getOutTime().getTime();
+        int discount = isDiscount ? Fare.DISCOUNT_RATE : 100;
 
-        double duration = (outTimeInMillis - inTimeInMillis) / (1000.0 * 60 * 60);
+        long durationInMilliseconds = ticket.getOutTime().getTime() - ticket.getInTime().getTime();
+        int thirtyMinutesInMilliseconds = 30 * 60 * 1000;
 
-        if (duration < 0.5) {
+        int CarRatePerHour = (int) (Fare.CAR_RATE_PER_HOUR * 100);
+        int BikeRatePerHour = (int) (Fare.BIKE_RATE_PER_HOUR * 100);
+
+        if (durationInMilliseconds < thirtyMinutesInMilliseconds) {
             ticket.setPrice(0);
             return;
         }
 
-        if (duration > 0.5 && isDiscount) {
-            duration = duration * Fare.DISCOUNT_RATE;
-        }
-
         switch (ticket.getParkingSpot().getParkingType()) {
             case CAR: {
-                ticket.setPrice(duration * Fare.CAR_RATE_PER_HOUR);
+                ticket.setPrice(calculatePrice(durationInMilliseconds, CarRatePerHour, discount));
                 break;
             }
             case BIKE: {
-                ticket.setPrice(duration * Fare.BIKE_RATE_PER_HOUR);
+                ticket.setPrice(calculatePrice(durationInMilliseconds, BikeRatePerHour, discount));
                 break;
             }
             default:
-                throw new IllegalArgumentException("Unkown Parking Type");
+                throw new IllegalArgumentException("Unknown Parking Type");
         }
+    }
+
+    private double calculatePrice(long duration, int rate, int discount) {
+        double durationInHours = duration / 3600000.0;
+        double durationInRound = Math.round(durationInHours * 100.0) / 100.0;
+        double price = durationInRound * rate * discount / 100;
+        return price / 100;
     }
 }

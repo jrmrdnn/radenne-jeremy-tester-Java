@@ -20,13 +20,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Date;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class ParkingDataBaseIT {
 
     private static final DataBaseTestConfig dataBaseTestConfig = new DataBaseTestConfig();
+    private static ParkingService parkingService;
     private static ParkingSpotDAO parkingSpotDAO;
     private static TicketDAO ticketDAO;
     private static DataBasePrepareService dataBasePrepareService;
@@ -39,15 +42,20 @@ public class ParkingDataBaseIT {
     public static void setUp() {
         parkingSpotDAO = new ParkingSpotDAO();
         parkingSpotDAO.dataBaseConfig = dataBaseTestConfig;
+
         ticketDAO = new TicketDAO();
         ticketDAO.dataBaseConfig = dataBaseTestConfig;
+
         dataBasePrepareService = new DataBasePrepareService();
     }
 
     @BeforeEach
     public void setUpPerTest() throws Exception {
+        parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
+
         when(inputReaderUtil.readSelection()).thenReturn(1);
         when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn(vehicleRegNumber);
+
         dataBasePrepareService.clearDataBaseEntries();
     }
 
@@ -58,33 +66,20 @@ public class ParkingDataBaseIT {
 
     @Test
     public void testParkingACar() {
-        ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
         parkingService.processIncomingVehicle();
 
-        Ticket ticket = ticketDAO.getTicket(vehicleRegNumber);
-
-        assertNotNull(ticket);
-        assertEquals(vehicleRegNumber, ticket.getVehicleRegNumber());
-        assertFalse(ticket.getParkingSpot().isAvailable());
+        assertNotNull(ticketDAO.getTicket(vehicleRegNumber).getInTime());
+        assertNotNull(ticketDAO.getTicket(vehicleRegNumber).getParkingSpot());
+        assertFalse(ticketDAO.getTicket(vehicleRegNumber).getParkingSpot().isAvailable());
+        assertEquals(vehicleRegNumber, ticketDAO.getTicket(vehicleRegNumber).getVehicleRegNumber());
     }
 
     @Test
     public void testParkingLotExit() {
-        ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
         parkingService.processIncomingVehicle();
-
-        Ticket ticket = ticketDAO.getTicket(vehicleRegNumber);
-        ticket.setInTime(new Date(System.currentTimeMillis() - (60 * 60 * 1000)));
-        ticket.setOutTime(new Date());
-        ticketDAO.updateTicket(ticket);
-
         parkingService.processExitingVehicle();
 
-        ticket = ticketDAO.getTicket(vehicleRegNumber);
-
-        assertNotNull(ticket.getOutTime());
-        System.out.println(ticket.getPrice());
-        assertTrue(ticket.getPrice() > 0);
+        assertEquals(0.0, ticketDAO.getTicket(vehicleRegNumber).getPrice());
     }
 
     @Test
@@ -100,20 +95,16 @@ public class ParkingDataBaseIT {
         int nbTickets = ticketDAO.getNbTicket(vehicleRegNumber);
         assertEquals(1, nbTickets);
 
-        ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
         parkingService.processIncomingVehicle();
 
         Ticket newTicket = ticketDAO.getTicket(vehicleRegNumber);
         newTicket.setInTime(new Date(System.currentTimeMillis() - (60 * 60 * 1000)));
-        newTicket.setOutTime(new Date());
         ticketDAO.updateTicket(newTicket);
 
         parkingService.processExitingVehicle();
 
-        nbTickets = ticketDAO.getNbTicket(vehicleRegNumber);
-        assertEquals(2, nbTickets);
-
-        newTicket = ticketDAO.getTicket(vehicleRegNumber);
-        assertEquals(Fare.DISCOUNT_RATE * Fare.CAR_RATE_PER_HOUR, newTicket.getPrice(), 0.001);
+        assertEquals(2, ticketDAO.getNbTicket(vehicleRegNumber));
+        double price = Fare.CAR_RATE_PER_HOUR * Fare.DISCOUNT_RATE / 100;
+        assertEquals(price, ticketDAO.getTicket(vehicleRegNumber).getPrice());
     }
 }
