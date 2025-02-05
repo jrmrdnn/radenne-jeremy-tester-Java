@@ -1,51 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FareCalculatorService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">parking-system</a> &gt; <a href="index.source.html" class="el_package">com.parkit.parkingsystem.service</a> &gt; <span class="el_source">FareCalculatorService.java</span></div><h1>FareCalculatorService.java</h1><pre class="source lang-java linenums">package com.parkit.parkingsystem.service;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+
 import com.parkit.parkingsystem.constants.Fare;
 import com.parkit.parkingsystem.model.Ticket;
 
-<span class="fc" id="L6">public class FareCalculatorService {</span>
+<span class="fc" id="L10">public class FareCalculatorService {</span>
 
     public void calculateFare(Ticket ticket) {
-<span class="fc" id="L9">        calculateFare(ticket, false);</span>
-<span class="fc" id="L10">    }</span>
+<span class="fc" id="L13">        calculateFare(ticket, false);</span>
+<span class="fc" id="L14">    }</span>
 
     public void calculateFare(Ticket ticket, boolean isDiscount) {
-<span class="fc bfc" id="L13" title="All 4 branches covered.">        if ((ticket.getOutTime() == null) || (ticket.getOutTime().before(ticket.getInTime()))) {</span>
-<span class="fc" id="L14">            throw new IllegalArgumentException(&quot;Out time provided is incorrect&quot;);</span>
+<span class="fc bfc" id="L17" title="All 4 branches covered.">        if ((ticket.getOutTime() == null) || (ticket.getOutTime().before(ticket.getInTime()))) {</span>
+<span class="fc" id="L18">            throw new IllegalArgumentException(&quot;Out time provided is incorrect&quot;);</span>
         }
 
-<span class="fc bfc" id="L17" title="All 2 branches covered.">        int discount = isDiscount ? Fare.DISCOUNT_RATE : 100;</span>
+<span class="fc bfc" id="L21" title="All 2 branches covered.">        double discount = isDiscount ? Fare.DISCOUNT_RATE : 1;</span>
 
-<span class="fc" id="L19">        long durationInMilliseconds = ticket.getOutTime().getTime() - ticket.getInTime().getTime();</span>
-<span class="fc" id="L20">        int thirtyMinutesInMilliseconds = 30 * 60 * 1000;</span>
+<span class="fc" id="L23">        long durationInMinutes = convertToMinutes(ticket.getInTime(), ticket.getOutTime());</span>
 
-<span class="fc" id="L22">        int CarRatePerHour = (int) (Fare.CAR_RATE_PER_HOUR * 100);</span>
-<span class="fc" id="L23">        int BikeRatePerHour = (int) (Fare.BIKE_RATE_PER_HOUR * 100);</span>
+<span class="fc" id="L25">        int thirtyMinutes = 30;</span>
 
-<span class="fc bfc" id="L25" title="All 2 branches covered.">        if (durationInMilliseconds &lt; thirtyMinutesInMilliseconds) {</span>
-<span class="fc" id="L26">            ticket.setPrice(0);</span>
-<span class="fc" id="L27">            return;</span>
-        }
+<span class="fc" id="L27">        double price = 0;</span>
 
-<span class="pc bpc" id="L30" title="1 of 3 branches missed.">        switch (ticket.getParkingSpot().getParkingType()) {</span>
-            case CAR: {
-<span class="fc" id="L32">                ticket.setPrice(calculatePrice(durationInMilliseconds, CarRatePerHour, discount));</span>
-<span class="fc" id="L33">                break;</span>
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        if (durationInMinutes &gt;= thirtyMinutes) {</span>
+<span class="pc bpc" id="L30" title="1 of 3 branches missed.">            switch (ticket.getParkingSpot().getParkingType()) {</span>
+                case CAR: {
+<span class="fc" id="L32">                    price = calculatePrice(durationInMinutes, Fare.CAR_RATE_PER_HOUR, discount);</span>
+<span class="fc" id="L33">                    break;</span>
+                }
+                case BIKE: {
+<span class="fc" id="L36">                    price = calculatePrice(durationInMinutes, Fare.BIKE_RATE_PER_HOUR, discount);</span>
+<span class="fc" id="L37">                    break;</span>
+                }
+                default:
+<span class="nc" id="L40">                    throw new IllegalArgumentException(&quot;Unknown Parking Type&quot;);</span>
             }
-            case BIKE: {
-<span class="fc" id="L36">                ticket.setPrice(calculatePrice(durationInMilliseconds, BikeRatePerHour, discount));</span>
-<span class="fc" id="L37">                break;</span>
-            }
-            default:
-<span class="nc" id="L40">                throw new IllegalArgumentException(&quot;Unknown Parking Type&quot;);</span>
         }
-<span class="fc" id="L42">    }</span>
 
-    private double calculatePrice(long duration, int rate, int discount) {
-<span class="fc" id="L45">        double durationInHours = duration / 3600000.0;</span>
-<span class="fc" id="L46">        double durationInRound = Math.round(durationInHours * 100.0) / 100.0;</span>
-<span class="fc" id="L47">        double price = durationInRound * rate * discount / 100;</span>
-<span class="fc" id="L48">        return price / 100;</span>
+<span class="fc" id="L44">        ticket.setPrice(price);</span>
+<span class="fc" id="L45">    }</span>
+
+    private long convertToMinutes(Date inTime, Date outTime) {
+<span class="fc" id="L48">        LocalDateTime inLocalDateTime = inTime.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();</span>
+<span class="fc" id="L49">        LocalDateTime outLocalDateTime = outTime.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();</span>
+<span class="fc" id="L50">        return ChronoUnit.MINUTES.between(inLocalDateTime, outLocalDateTime);</span>
+    }
+
+    private double calculatePrice(long durationInMinutes, double fareInHours, double discount) {
+<span class="fc" id="L54">        double durationInHours = durationInMinutes / 60.0;</span>
+<span class="fc" id="L55">        double calculate = durationInHours * fareInHours * discount;</span>
+<span class="fc" id="L56">        return Math.round(calculate * 100.0) / 100.0;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

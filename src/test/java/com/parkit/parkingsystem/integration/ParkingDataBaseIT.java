@@ -50,7 +50,7 @@ public class ParkingDataBaseIT {
     }
 
     @BeforeEach
-    public void setUpPerTest() throws Exception {
+    public void setUpPerTest() {
         parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
 
         when(inputReaderUtil.readSelection()).thenReturn(1);
@@ -84,9 +84,11 @@ public class ParkingDataBaseIT {
 
     @Test
     public void testParkingLotExitRecurringUser() {
+        long currentTimeMillis = System.currentTimeMillis();
+
         Ticket ticket = new Ticket();
-        ticket.setInTime(new Date(System.currentTimeMillis() - (60 * 60 * 3000)));
-        ticket.setOutTime(new Date(System.currentTimeMillis() - (60 * 60 * 2000)));
+        ticket.setInTime(new Date(currentTimeMillis - (60 * 60 * 3000)));
+        ticket.setOutTime(new Date(currentTimeMillis - (60 * 60 * 2000)));
         ticket.setVehicleRegNumber(vehicleRegNumber);
         ticket.setParkingSpot(new ParkingSpot(1, ParkingType.CAR, false));
 
@@ -98,13 +100,14 @@ public class ParkingDataBaseIT {
         parkingService.processIncomingVehicle();
 
         Ticket newTicket = ticketDAO.getTicket(vehicleRegNumber);
-        newTicket.setInTime(new Date(System.currentTimeMillis() - (60 * 60 * 1000)));
+        newTicket.setInTime(new Date(currentTimeMillis - (60 * 60 * 1000)));
+        newTicket.setOutTime(new Date(currentTimeMillis));
         ticketDAO.updateTicket(newTicket);
 
         parkingService.processExitingVehicle();
 
         assertEquals(2, ticketDAO.getNbTicket(vehicleRegNumber));
-        double price = Fare.CAR_RATE_PER_HOUR * Fare.DISCOUNT_RATE / 100;
-        assertEquals(price, ticketDAO.getTicket(vehicleRegNumber).getPrice());
+        double price = Fare.CAR_RATE_PER_HOUR * Fare.DISCOUNT_RATE;
+        assertEquals(price, ticketDAO.getTicket(vehicleRegNumber).getPrice(), 0.01);
     }
 }
