@@ -17,6 +17,8 @@ import java.util.Date;
 public class FareCalculatorServiceTest {
     private Ticket ticket;
 
+    private static long currentTimeMillis;
+
     private static Date twentyFourHours;
     private static Date oneHour;
     private static Date fortyFiveMinutes;
@@ -28,11 +30,13 @@ public class FareCalculatorServiceTest {
 
     @BeforeAll
     public static void setUp() {
-        now = new Date();
-        twentyFourHours = new Date(System.currentTimeMillis() - (24 * 60 * 60 * 1000));
-        oneHour = new Date(System.currentTimeMillis() - (60 * 60 * 1000));
-        fortyFiveMinutes = new Date(System.currentTimeMillis() - (45 * 60 * 1000));
-        twentyNineMinutes = new Date(System.currentTimeMillis() - (29 * 60 * 1000));
+        currentTimeMillis = System.currentTimeMillis();
+
+        now = new Date(currentTimeMillis);
+        twentyFourHours = new Date(currentTimeMillis - (24 * 60 * 60 * 1000));
+        oneHour = new Date(currentTimeMillis - (60 * 60 * 1000));
+        fortyFiveMinutes = new Date(currentTimeMillis - (45 * 60 * 1000));
+        twentyNineMinutes = new Date(currentTimeMillis - (29 * 60 * 1000));
 
         carParkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
         bikeParkingSpot = new ParkingSpot(1, ParkingType.BIKE, false);
