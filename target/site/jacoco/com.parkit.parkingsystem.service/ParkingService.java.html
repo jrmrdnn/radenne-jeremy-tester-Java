@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ParkingService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">parking-system</a> &gt; <a href="index.source.html" class="el_package">com.parkit.parkingsystem.service</a> &gt; <span class="el_source">ParkingService.java</span></div><h1>ParkingService.java</h1><pre class="source lang-java linenums">package com.parkit.parkingsystem.service;
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ParkingService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">parking-system</a> &gt; <a href="index.source.html" class="el_package">com.parkit.parkingsystem.service</a> &gt; <span class="el_source">ParkingService.java</span></div><h1>ParkingService.java</h1><pre class="source lang-java linenums">package com.parkit.parkingsystem.service;
 
 import com.parkit.parkingsystem.constants.ParkingType;
 import com.parkit.parkingsystem.dao.ParkingSpotDAO;
@@ -36,8 +36,8 @@ public class ParkingService {
 
 <span class="fc" id="L37">                parkingSpotDAO.updateParking(parkingSpot);</span>
 
-<span class="fc bfc" id="L39" title="All 2 branches covered.">                if (ticketDAO.getNbTicket(vehicleRegNumber) &gt; 0) {</span>
-<span class="fc" id="L40">                    System.out.println(</span>
+<span class="pc bpc" id="L39" title="1 of 2 branches missed.">                if (ticketDAO.getNbTicket(vehicleRegNumber) &gt; 0) {</span>
+<span class="nc" id="L40">                    System.out.println(</span>
                             &quot;Welcome! As a recurring user of our parking lot, you'll benefit from a 5% discount.&quot;);
                 }
 
@@ -117,8 +117,8 @@ public class ParkingService {
 
 <span class="fc" id="L118">            int nbTicket = ticketDAO.getNbTicket(vehicleRegNumber);</span>
 
-<span class="fc bfc" id="L120" title="All 2 branches covered.">            if (nbTicket &gt; 1) {</span>
-<span class="fc" id="L121">                fareCalculatorService.calculateFare(ticket, true);</span>
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">            if (nbTicket &gt; 1) {</span>
+<span class="nc" id="L121">                fareCalculatorService.calculateFare(ticket, true);</span>
             } else {
 <span class="fc" id="L123">                fareCalculatorService.calculateFare(ticket);</span>
             }
